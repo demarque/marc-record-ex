@@ -1,4 +1,4 @@
-use marc_record::{parse_records, Field};
+use marc_record::{parse_records, ControlField, DataField, Field};
 
 use rustler::{Encoder, Env, Term};
 use std::fs::File;
@@ -13,7 +13,7 @@ struct DataFieldWrapper {
 impl Encoder for DataFieldWrapper {
     fn encode<'a>(&self, env: Env<'a>) -> Term<'a> {
         let tag = ("tag", self.tag.encode(env));
-        let indicator = ("tag", self.indicator.encode(env));
+        let indicator = ("indicator", self.indicator.encode(env));
         let mut subfields_list = Term::list_new_empty(env);
         for subfield in &self.subfields {
             subfields_list = subfields_list.list_prepend(subfield.encode(env));
@@ -71,26 +71,34 @@ enum FieldWrapper {
 impl FieldWrapper {
     pub fn new(field: &Field) -> Self {
         match field {
-            Field::Control(control) => FieldWrapper::Control(ControlFieldWrapper {
-                tag: control.tag.to_string(),
-                data: control.data.clone(),
-            }),
-            Field::Data(data) => FieldWrapper::Data(DataFieldWrapper {
-                tag: data.tag.to_string(),
-                indicator: data.indicator.iter().fold(String::new(), |mut acc, &c| {
-                    acc.push(c);
-                    acc
-                }),
-                subfields: data
-                    .subfields
-                    .iter()
-                    .map(|subfield| SubfieldWrapper {
-                        tag: subfield.tag.to_string(),
-                        data: subfield.data.clone(),
-                    })
-                    .collect(),
-            }),
+            Field::Control(control) => Self::build_control(&control),
+            Field::Data(data) => Self::build_data(&data),
         }
+    }
+
+    fn build_control(control: &ControlField) -> FieldWrapper {
+        FieldWrapper::Control(ControlFieldWrapper {
+            tag: control.tag.to_string(),
+            data: control.data.clone(),
+        })
+    }
+
+    fn build_data(data: &DataField) -> FieldWrapper {
+        FieldWrapper::Data(DataFieldWrapper {
+            tag: data.tag.to_string(),
+            indicator: data.indicator.iter().fold(String::new(), |mut acc, &c| {
+                acc.push(c);
+                acc
+            }),
+            subfields: data
+                .subfields
+                .iter()
+                .map(|subfield| SubfieldWrapper {
+                    tag: subfield.tag.to_string(),
+                    data: subfield.data.clone(),
+                })
+                .collect(),
+        })
     }
 }
 
