@@ -12,16 +12,14 @@ struct DataFieldWrapper {
 
 impl Encoder for DataFieldWrapper {
     fn encode<'a>(&self, env: Env<'a>) -> Term<'a> {
-        let mut record = Term::map_new(env);
-        record = record.map_put("tag", self.tag.encode(env)).unwrap();
-        record = record
-            .map_put("indicator", self.indicator.encode(env))
-            .unwrap();
-        let mut subfields = Term::list_new_empty(env);
+        let tag = ("tag", self.tag.encode(env));
+        let indicator = ("tag", self.indicator.encode(env));
+        let mut subfields_list = Term::list_new_empty(env);
         for subfield in &self.subfields {
-            subfields = subfields.list_prepend(subfield.encode(env));
+            subfields_list = subfields_list.list_prepend(subfield.encode(env));
         }
-        record.map_put("subfields", subfields).unwrap()
+        let subfields = ("subfields", subfields_list);
+        Term::map_from_pairs(env, &[tag, indicator, subfields]).unwrap()
     }
 }
 
@@ -44,12 +42,11 @@ struct RecordWrapper {
 
 impl Encoder for RecordWrapper {
     fn encode<'a>(&self, env: Env<'a>) -> Term<'a> {
-        let record = Term::map_new(env);
         let mut data_fields = Term::list_new_empty(env);
         for field in &self.fields {
             data_fields = data_fields.list_prepend(field.encode(env));
         }
-        record.map_put("fields", data_fields).unwrap()
+        Term::map_from_pairs(env, &[("fields", data_fields)]).unwrap()
     }
 }
 
@@ -60,9 +57,9 @@ struct ControlFieldWrapper {
 
 impl Encoder for ControlFieldWrapper {
     fn encode<'a>(&self, env: Env<'a>) -> Term<'a> {
-        let mut record = Term::map_new(env);
-        record = record.map_put("tag", self.tag.encode(env)).unwrap();
-        record.map_put("data", self.data.encode(env)).unwrap()
+        let tag = ("tag", self.tag.encode(env));
+        let data = ("data", self.data.encode(env));
+        Term::map_from_pairs(env, &[tag, data]).unwrap()
     }
 }
 
