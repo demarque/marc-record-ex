@@ -1,3 +1,14 @@
+/// This is the Rust code that will be compiled into a shared library and loaded by Elixir.
+/// It is a simple wrapper around the `marc-record` crate that provides a NIF for parsing MARC
+/// files.
+/// Data Structure in this file are just wrapper for the original data structure from `marc-record` crate which are:
+/// - Record: struct with a leader struct and a vector of fields
+/// - Field enum for data and control fields
+/// - ControlField
+/// - DataField
+///
+/// Each Wrapper implements the Encoder trait from the rustler crate to allow the data to be
+/// encoded in a Elixir term which is an Elixir data strcture.
 use marc_record::{parse_records, ControlField, DataField, Field, Record};
 
 use rustler::{Encoder, Env, Term};
