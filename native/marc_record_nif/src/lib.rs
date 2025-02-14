@@ -11,19 +11,11 @@
 /// encoded in a Elixir term which is an Elixir data strcture.
 use marc_record::{parse_records, ControlField, DataField, Field, Record, Subfield};
 
-use rustler::{Encoder, Env, Term};
-use std::fs::File;
-use std::io::Read;
+use rustler::{Binary, Encoder, Env, NifResult, Term};
 
 #[rustler::nif]
-fn parse_records_wrapper(filename: String) -> Result<Vec<RecordWrapper>, String> {
-    let mut contents = Vec::new();
-    File::open(filename)
-        .unwrap()
-        .read_to_end(&mut contents)
-        .unwrap();
-
-    let records = parse_records(&contents).unwrap();
+fn parse_records_wrapper<'a>(data: Binary<'a>) -> NifResult<Vec<RecordWrapper>> {
+    let records = parse_records(data.as_slice()).unwrap();
     let retval = records
         .iter()
         .map(|record| RecordWrapper::new(record))

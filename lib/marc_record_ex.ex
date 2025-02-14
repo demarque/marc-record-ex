@@ -14,11 +14,12 @@ defmodule MarcRecordEx do
   """
   use Rustler, otp_app: :marc_record_ex, crate: :marc_record_nif
 
-  def parse_records_wrapper(_filename), do: error()
+  def parse_records_wrapper(_binary_data), do: error()
 
   defp error(), do: :erlang.nif_error(:nif_not_loaded)
 
-  def parse_records(filename) do
-    MarcRecordEx.parse_records_wrapper(filename)
+  def parse_records do
+    data = File.read!("record.mrc")
+    MarcRecordEx.parse_records_wrapper(data)
   end
 end
