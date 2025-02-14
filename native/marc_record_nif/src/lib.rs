@@ -51,11 +51,14 @@ impl RecordWrapper {
 
 impl Encoder for RecordWrapper {
     fn encode<'a>(&self, env: Env<'a>) -> Term<'a> {
-        let mut data_fields = Term::list_new_empty(env);
+        let mut record_fields = Term::list_new_empty(env);
         for field in &self.fields {
-            data_fields = data_fields.list_prepend(field.encode(env));
+            record_fields = record_fields.list_prepend(field.encode(env));
         }
-        Term::map_from_pairs(env, &[("fields", data_fields)]).unwrap()
+        if let Ok(retval) = Term::map_from_pairs(env, &[("fields", record_fields)]) {
+            return retval;
+        }
+        Term::map_new(env)
     }
 }
 
@@ -100,7 +103,10 @@ impl Encoder for ControlFieldWrapper {
     fn encode<'a>(&self, env: Env<'a>) -> Term<'a> {
         let tag = ("tag", self.tag.encode(env));
         let data = ("data", self.data.encode(env));
-        Term::map_from_pairs(env, &[tag, data]).unwrap()
+        if let Ok(retval) = Term::map_from_pairs(env, &[tag, data]) {
+            return retval;
+        }
+        Term::map_new(env)
     }
 }
 
@@ -146,7 +152,10 @@ impl Encoder for DataFieldWrapper {
             subfields_list = subfields_list.list_prepend(subfield.encode(env));
         }
         let subfields = ("subfields", subfields_list);
-        Term::map_from_pairs(env, &[tag, indicator, subfields]).unwrap()
+        if let Ok(retval) = Term::map_from_pairs(env, &[tag, indicator, subfields]) {
+            return retval;
+        }
+        Term::map_new(env)
     }
 }
 
@@ -157,9 +166,13 @@ struct SubfieldWrapper {
 
 impl Encoder for SubfieldWrapper {
     fn encode<'a>(&self, env: Env<'a>) -> Term<'a> {
-        let mut record = Term::map_new(env);
-        record = record.map_put("tag", self.tag.encode(env)).unwrap();
-        record.map_put("data", self.data.encode(env)).unwrap()
+        let tag = ("tag", self.tag.encode(env));
+        let data = ("data", self.data.encode(env));
+
+        if let Ok(retval) = Term::map_from_pairs(env, &[tag, data]) {
+            return retval;
+        }
+        Term::map_new(env)
     }
 }
 
