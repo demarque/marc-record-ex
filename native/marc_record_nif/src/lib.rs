@@ -9,7 +9,7 @@
 ///
 /// Each Wrapper implements the Encoder trait from the rustler crate to allow the data to be
 /// encoded in a Elixir term which is an Elixir data strcture.
-use marc_record::{parse_records, ControlField, DataField, Field, Record};
+use marc_record::{parse_records, ControlField, DataField, Field, Record, Subfield};
 
 use rustler::{Encoder, Env, Term};
 use std::fs::File;
@@ -26,24 +26,28 @@ fn parse_records_wrapper(filename: String) -> Result<Vec<RecordWrapper>, String>
     let records = parse_records(&contents).unwrap();
     let retval = records
         .iter()
-        .map(|record| {
-            let fields = get_record_fields(record);
-            RecordWrapper { fields }
-        })
+        .map(|record| RecordWrapper::new(record))
         .collect::<Vec<_>>();
     Ok(retval)
 }
 
-fn get_record_fields(record: &Record) -> Vec<FieldWrapper> {
-    record
-        .fields
-        .iter()
-        .map(|field| FieldWrapper::new(field))
-        .collect()
-}
-
 struct RecordWrapper {
     pub fields: Vec<FieldWrapper>,
+}
+
+impl RecordWrapper {
+    pub fn new(record: &Record) -> Self {
+        let fields = Self::get_record_fields(record);
+        RecordWrapper { fields }
+    }
+
+    fn get_record_fields(record: &Record) -> Vec<FieldWrapper> {
+        record
+            .fields
+            .iter()
+            .map(|field| FieldWrapper::new(field))
+            .collect()
+    }
 }
 
 impl Encoder for RecordWrapper {
@@ -64,34 +68,9 @@ enum FieldWrapper {
 impl FieldWrapper {
     pub fn new(field: &Field) -> Self {
         match field {
-            Field::Control(control) => Self::build_control(&control),
-            Field::Data(data) => Self::build_data(&data),
+            Field::Control(control) => FieldWrapper::Control(ControlFieldWrapper::new(control)),
+            Field::Data(data) => FieldWrapper::Data(DataFieldWrapper::new(data)),
         }
-    }
-
-    fn build_control(control: &ControlField) -> FieldWrapper {
-        FieldWrapper::Control(ControlFieldWrapper {
-            tag: control.tag.to_string(),
-            data: control.data.clone(),
-        })
-    }
-
-    fn build_data(data: &DataField) -> FieldWrapper {
-        FieldWrapper::Data(DataFieldWrapper {
-            tag: data.tag.to_string(),
-            indicator: data.indicator.iter().fold(String::new(), |mut acc, &c| {
-                acc.push(c);
-                acc
-            }),
-            subfields: data
-                .subfields
-                .iter()
-                .map(|subfield| SubfieldWrapper {
-                    tag: subfield.tag.to_string(),
-                    data: subfield.data.clone(),
-                })
-                .collect(),
-        })
     }
 }
 
@@ -109,6 +88,15 @@ struct ControlFieldWrapper {
     pub data: String,
 }
 
+impl ControlFieldWrapper {
+    pub fn new(control: &ControlField) -> Self {
+        ControlFieldWrapper {
+            tag: control.tag.to_string(),
+            data: control.data.clone(),
+        }
+    }
+}
+
 impl Encoder for ControlFieldWrapper {
     fn encode<'a>(&self, env: Env<'a>) -> Term<'a> {
         let tag = ("tag", self.tag.encode(env));
@@ -121,6 +109,33 @@ struct DataFieldWrapper {
     pub tag: String,
     pub indicator: String,
     pub subfields: Vec<SubfieldWrapper>,
+}
+
+impl DataFieldWrapper {
+    pub fn new(data: &DataField) -> Self {
+        Self {
+            tag: data.tag.to_string(),
+            indicator: Self::build_indicator(&data.indicator),
+            subfields: Self::build_subfields(&data.subfields),
+        }
+    }
+
+    fn build_indicator(indicator: &[char]) -> String {
+        indicator.iter().fold(String::new(), |mut acc, &c| {
+            acc.push(c);
+            acc
+        })
+    }
+
+    fn build_subfields(subfields: &[Subfield]) -> Vec<SubfieldWrapper> {
+        subfields
+            .iter()
+            .map(|subfield| SubfieldWrapper {
+                tag: subfield.tag.to_string(),
+                data: subfield.data.clone(),
+            })
+            .collect()
+    }
 }
 
 impl Encoder for DataFieldWrapper {
