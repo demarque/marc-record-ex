@@ -1,4 +1,4 @@
-use marc_record::{parse_records, ControlField, DataField, Field};
+use marc_record::{parse_records, ControlField, DataField, Field, Record};
 
 use rustler::{Encoder, Env, Term};
 use std::fs::File;
@@ -16,15 +16,19 @@ fn parse_records_wrapper(filename: String) -> Result<Vec<RecordWrapper>, String>
     let retval = records
         .iter()
         .map(|record| {
-            let fields = record
-                .fields
-                .iter()
-                .map(|field| FieldWrapper::new(field))
-                .collect();
+            let fields = get_record_fields(record);
             RecordWrapper { fields }
         })
         .collect::<Vec<_>>();
     Ok(retval)
+}
+
+fn get_record_fields(record: &Record) -> Vec<FieldWrapper> {
+    record
+        .fields
+        .iter()
+        .map(|field| FieldWrapper::new(field))
+        .collect()
 }
 
 struct RecordWrapper {
