@@ -11,16 +11,23 @@
 /// encoded in a Elixir term which is an Elixir data strcture.
 use marc_record::{parse_records, ControlField, DataField, Field, Record, Subfield};
 
-use rustler::{Binary, Encoder, Env, NifResult, Term};
+use rustler::{Binary, Encoder, Env, Error, NifResult, Term};
 
 #[rustler::nif]
 fn parse_records_wrapper<'a>(data: Binary<'a>) -> NifResult<Vec<RecordWrapper>> {
-    let records = parse_records(data.as_slice()).unwrap();
-    let retval = records
-        .iter()
-        .map(|record| RecordWrapper::new(record))
-        .collect::<Vec<_>>();
-    Ok(retval)
+    match parse_records(data.as_slice()) {
+        Ok(records) => {
+            let retval = records
+                .iter()
+                .map(|record| RecordWrapper::new(record))
+                .collect::<Vec<_>>();
+            return NifResult::Ok(retval);
+        }
+        Err(error) => {
+            let format_error = format!("Error in crate marc-record: {}", error);
+            return NifResult::Err(Error::Term(Box::new(format_error)));
+        }
+    }
 }
 
 struct RecordWrapper {
