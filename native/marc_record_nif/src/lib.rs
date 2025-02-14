@@ -5,7 +5,7 @@ use std::fs::File;
 use std::io::Read;
 
 #[rustler::nif]
-fn parse_records_wrapper(filename: String) -> Vec<RecordWrapper> {
+fn parse_records_wrapper(filename: String) -> Result<Vec<RecordWrapper>, String> {
     let mut contents = Vec::new();
     File::open(filename)
         .unwrap()
@@ -13,7 +13,7 @@ fn parse_records_wrapper(filename: String) -> Vec<RecordWrapper> {
         .unwrap();
 
     let records = parse_records(&contents).unwrap();
-    records
+    let retval = records
         .iter()
         .map(|record| {
             let fields = record
@@ -23,7 +23,8 @@ fn parse_records_wrapper(filename: String) -> Vec<RecordWrapper> {
                 .collect();
             RecordWrapper { fields }
         })
-        .collect()
+        .collect::<Vec<_>>();
+    Ok(retval)
 }
 
 struct RecordWrapper {
