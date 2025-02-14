@@ -1,0 +1,13 @@
+[package]
+name = "marc_record_nif"
+version = "0.1.0"
+authors = []
+edition = "2021"
+
+[lib]
+name = "marc_record_nif"
+crate-type = ["cdylib"]
+
+[dependencies]
+marc-record = "0.5.1"
+rustler = "0.36.1"

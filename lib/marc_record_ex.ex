@@ -8,11 +8,17 @@ defmodule MarcRecordEx do
 
   ## Examples
 
-      iex> MarcRecordEx.parse_records()
-      :record
+      iex> MarcRecordEx.parse_records("record.mrc")
+      ....
 
   """
-  def parse_records do
-    :record
+  use Rustler, otp_app: :marc_record_ex, crate: :marc_record_nif
+
+  def parse_records_wrapper(_filename), do: error()
+
+  defp error(), do: :erlang.nif_error(:nif_not_loaded)
+
+  def parse_records(filename) do
+    MarcRecordEx.parse_records_wrapper(filename)
   end
 end

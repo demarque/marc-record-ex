@@ -28,3 +28,11 @@ erl_crash.dump
 *.beam
 /config/*.secret.exs
 .elixir_ls/
+
+# Rust binary artifacts
+/target/
+
+record.mrc
+
+# Ignore nif files
+/priv
