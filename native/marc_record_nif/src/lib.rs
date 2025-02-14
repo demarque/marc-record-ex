@@ -4,36 +4,26 @@ use rustler::{Encoder, Env, Term};
 use std::fs::File;
 use std::io::Read;
 
-struct DataFieldWrapper {
-    pub tag: String,
-    pub indicator: String,
-    pub subfields: Vec<SubfieldWrapper>,
-}
+#[rustler::nif]
+fn parse_records_wrapper(filename: String) -> Vec<RecordWrapper> {
+    let mut contents = Vec::new();
+    File::open(filename)
+        .unwrap()
+        .read_to_end(&mut contents)
+        .unwrap();
 
-impl Encoder for DataFieldWrapper {
-    fn encode<'a>(&self, env: Env<'a>) -> Term<'a> {
-        let tag = ("tag", self.tag.encode(env));
-        let indicator = ("indicator", self.indicator.encode(env));
-        let mut subfields_list = Term::list_new_empty(env);
-        for subfield in &self.subfields {
-            subfields_list = subfields_list.list_prepend(subfield.encode(env));
-        }
-        let subfields = ("subfields", subfields_list);
-        Term::map_from_pairs(env, &[tag, indicator, subfields]).unwrap()
-    }
-}
-
-struct SubfieldWrapper {
-    pub tag: String,
-    pub data: String,
-}
-
-impl Encoder for SubfieldWrapper {
-    fn encode<'a>(&self, env: Env<'a>) -> Term<'a> {
-        let mut record = Term::map_new(env);
-        record = record.map_put("tag", self.tag.encode(env)).unwrap();
-        record.map_put("data", self.data.encode(env)).unwrap()
-    }
+    let records = parse_records(&contents).unwrap();
+    records
+        .iter()
+        .map(|record| {
+            let fields = record
+                .fields
+                .iter()
+                .map(|field| FieldWrapper::new(field))
+                .collect();
+            RecordWrapper { fields }
+        })
+        .collect()
 }
 
 struct RecordWrapper {
@@ -47,19 +37,6 @@ impl Encoder for RecordWrapper {
             data_fields = data_fields.list_prepend(field.encode(env));
         }
         Term::map_from_pairs(env, &[("fields", data_fields)]).unwrap()
-    }
-}
-
-struct ControlFieldWrapper {
-    pub tag: String,
-    pub data: String,
-}
-
-impl Encoder for ControlFieldWrapper {
-    fn encode<'a>(&self, env: Env<'a>) -> Term<'a> {
-        let tag = ("tag", self.tag.encode(env));
-        let data = ("data", self.data.encode(env));
-        Term::map_from_pairs(env, &[tag, data]).unwrap()
     }
 }
 
@@ -111,26 +88,49 @@ impl Encoder for FieldWrapper {
     }
 }
 
-#[rustler::nif]
-fn parse_records_wrapper(filename: String) -> Vec<RecordWrapper> {
-    let mut contents = Vec::new();
-    File::open(filename)
-        .unwrap()
-        .read_to_end(&mut contents)
-        .unwrap();
+struct ControlFieldWrapper {
+    pub tag: String,
+    pub data: String,
+}
 
-    let records = parse_records(&contents).unwrap();
-    records
-        .iter()
-        .map(|record| {
-            let fields = record
-                .fields
-                .iter()
-                .map(|field| FieldWrapper::new(field))
-                .collect();
-            RecordWrapper { fields }
-        })
-        .collect()
+impl Encoder for ControlFieldWrapper {
+    fn encode<'a>(&self, env: Env<'a>) -> Term<'a> {
+        let tag = ("tag", self.tag.encode(env));
+        let data = ("data", self.data.encode(env));
+        Term::map_from_pairs(env, &[tag, data]).unwrap()
+    }
+}
+
+struct DataFieldWrapper {
+    pub tag: String,
+    pub indicator: String,
+    pub subfields: Vec<SubfieldWrapper>,
+}
+
+impl Encoder for DataFieldWrapper {
+    fn encode<'a>(&self, env: Env<'a>) -> Term<'a> {
+        let tag = ("tag", self.tag.encode(env));
+        let indicator = ("indicator", self.indicator.encode(env));
+        let mut subfields_list = Term::list_new_empty(env);
+        for subfield in &self.subfields {
+            subfields_list = subfields_list.list_prepend(subfield.encode(env));
+        }
+        let subfields = ("subfields", subfields_list);
+        Term::map_from_pairs(env, &[tag, indicator, subfields]).unwrap()
+    }
+}
+
+struct SubfieldWrapper {
+    pub tag: String,
+    pub data: String,
+}
+
+impl Encoder for SubfieldWrapper {
+    fn encode<'a>(&self, env: Env<'a>) -> Term<'a> {
+        let mut record = Term::map_new(env);
+        record = record.map_put("tag", self.tag.encode(env)).unwrap();
+        record.map_put("data", self.data.encode(env)).unwrap()
+    }
 }
 
 rustler::init!("Elixir.MarcRecordEx");
