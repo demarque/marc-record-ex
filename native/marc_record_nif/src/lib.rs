@@ -96,9 +96,11 @@ impl ControlFieldWrapper {
 
 impl Encoder for ControlFieldWrapper {
     fn encode<'a>(&self, env: Env<'a>) -> Term<'a> {
+        let field_type = ("type", "control".encode(env));
         let tag = ("tag", self.tag.encode(env));
         let data = ("data", self.data.encode(env));
-        Term::map_from_pairs(env, &[tag, data]).expect("Failed to create map: duplicate key")
+        Term::map_from_pairs(env, &[field_type, tag, data])
+            .expect("Failed to create map: duplicate key")
     }
 }
 
@@ -137,14 +139,15 @@ impl DataFieldWrapper {
 
 impl Encoder for DataFieldWrapper {
     fn encode<'a>(&self, env: Env<'a>) -> Term<'a> {
-        let tag = ("tag", self.tag.encode(env));
-        let indicator = ("indicator", self.indicator.encode(env));
+        let field_type = ("type", "data".encode(env));
+        let tag = ("tag", self.tag.trim().encode(env));
+        let indicator = ("indicator", self.indicator.trim().encode(env));
         let mut subfields_list = Term::list_new_empty(env);
         for subfield in &self.subfields {
             subfields_list = subfields_list.list_prepend(subfield.encode(env));
         }
         let subfields = ("subfields", subfields_list);
-        Term::map_from_pairs(env, &[tag, indicator, subfields])
+        Term::map_from_pairs(env, &[field_type, tag, indicator, subfields])
             .expect("Failed to create map: duplicate key")
     }
 }
@@ -156,8 +159,8 @@ struct SubfieldWrapper {
 
 impl Encoder for SubfieldWrapper {
     fn encode<'a>(&self, env: Env<'a>) -> Term<'a> {
-        let tag = ("tag", self.tag.encode(env));
-        let data = ("data", self.data.encode(env));
+        let tag = ("tag", self.tag.trim().encode(env));
+        let data = ("data", self.data.trim().encode(env));
 
         Term::map_from_pairs(env, &[tag, data]).expect("Failed to create map: duplicate key")
     }
