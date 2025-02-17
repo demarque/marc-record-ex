@@ -17,15 +17,12 @@ use rustler::{Binary, Encoder, Env, Error, NifResult, Term};
 fn parse_records_wrapper<'a>(data: Binary<'a>) -> NifResult<Vec<RecordWrapper>> {
     match parse_records(data.as_slice()) {
         Ok(records) => {
-            let retval = records
-                .iter()
-                .map(|record| RecordWrapper::new(record))
-                .collect::<Vec<_>>();
-            return NifResult::Ok(retval);
+            let retval = records.iter().map(RecordWrapper::new).collect::<Vec<_>>();
+            NifResult::Ok(retval)
         }
         Err(error) => {
             let format_error = format!("Error in crate marc-record: {}", error);
-            return NifResult::Err(Error::Term(Box::new(format_error)));
+            NifResult::Err(Error::Term(Box::new(format_error)))
         }
     }
 }
