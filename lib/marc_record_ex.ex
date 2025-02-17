@@ -16,4 +16,8 @@ defmodule MarcRecordEx do
     data = File.read!(filename)
     MarcRecordEx.parse_records_wrapper(data)
   end
+
+  def example do
+    parse_records("./samples/marc8_multiple.mrc")
+  end
 end
