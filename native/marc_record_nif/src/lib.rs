@@ -55,10 +55,8 @@ impl Encoder for RecordWrapper {
         for field in &self.fields {
             record_fields = record_fields.list_prepend(field.encode(env));
         }
-        if let Ok(retval) = Term::map_from_pairs(env, &[("fields", record_fields)]) {
-            return retval;
-        }
-        Term::map_new(env)
+        Term::map_from_pairs(env, &[("fields", record_fields)])
+            .expect("Failed to create map: duplicate key")
     }
 }
 
@@ -103,10 +101,7 @@ impl Encoder for ControlFieldWrapper {
     fn encode<'a>(&self, env: Env<'a>) -> Term<'a> {
         let tag = ("tag", self.tag.encode(env));
         let data = ("data", self.data.encode(env));
-        if let Ok(retval) = Term::map_from_pairs(env, &[tag, data]) {
-            return retval;
-        }
-        Term::map_new(env)
+        Term::map_from_pairs(env, &[tag, data]).expect("Failed to create map: duplicate key")
     }
 }
 
@@ -152,10 +147,8 @@ impl Encoder for DataFieldWrapper {
             subfields_list = subfields_list.list_prepend(subfield.encode(env));
         }
         let subfields = ("subfields", subfields_list);
-        if let Ok(retval) = Term::map_from_pairs(env, &[tag, indicator, subfields]) {
-            return retval;
-        }
-        Term::map_new(env)
+        Term::map_from_pairs(env, &[tag, indicator, subfields])
+            .expect("Failed to create map: duplicate key")
     }
 }
 
@@ -169,10 +162,7 @@ impl Encoder for SubfieldWrapper {
         let tag = ("tag", self.tag.encode(env));
         let data = ("data", self.data.encode(env));
 
-        if let Ok(retval) = Term::map_from_pairs(env, &[tag, data]) {
-            return retval;
-        }
-        Term::map_new(env)
+        Term::map_from_pairs(env, &[tag, data]).expect("Failed to create map: duplicate key")
     }
 }
 
