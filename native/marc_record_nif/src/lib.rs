@@ -17,7 +17,10 @@ use rustler::{Binary, Encoder, Env, Error, NifResult, Term};
 fn parse_records_wrapper<'a>(data: Binary<'a>) -> NifResult<Vec<RecordWrapper>> {
     match parse_records(data.as_slice()) {
         Ok(records) => {
-            let retval = records.iter().map(RecordWrapper::new).collect::<Vec<_>>();
+            let retval = records
+                .into_iter()
+                .map(RecordWrapper::new)
+                .collect::<Vec<_>>();
             NifResult::Ok(retval)
         }
         Err(error) => {
@@ -32,15 +35,15 @@ struct RecordWrapper {
 }
 
 impl RecordWrapper {
-    pub fn new(record: &Record) -> Self {
+    pub fn new(record: Record) -> Self {
         let fields = Self::get_record_fields(record);
         RecordWrapper { fields }
     }
 
-    fn get_record_fields(record: &Record) -> Vec<FieldWrapper> {
+    fn get_record_fields(record: Record) -> Vec<FieldWrapper> {
         record
             .fields
-            .iter()
+            .into_iter()
             .map(|field| FieldWrapper::new(field))
             .collect()
     }
@@ -63,7 +66,7 @@ enum FieldWrapper {
 }
 
 impl FieldWrapper {
-    pub fn new(field: &Field) -> Self {
+    pub fn new(field: Field) -> Self {
         match field {
             Field::Control(control) => FieldWrapper::Control(ControlFieldWrapper::new(control)),
             Field::Data(data) => FieldWrapper::Data(DataFieldWrapper::new(data)),
@@ -86,10 +89,10 @@ struct ControlFieldWrapper {
 }
 
 impl ControlFieldWrapper {
-    pub fn new(control: &ControlField) -> Self {
+    pub fn new(control: ControlField) -> Self {
         ControlFieldWrapper {
             tag: control.tag.to_string(),
-            data: control.data.clone(),
+            data: control.data,
         }
     }
 }
@@ -111,7 +114,7 @@ struct DataFieldWrapper {
 }
 
 impl DataFieldWrapper {
-    pub fn new(data: &DataField) -> Self {
+    pub fn new(data: DataField) -> Self {
         Self {
             tag: data.tag.to_string(),
             indicator: Self::build_indicator(&data.indicator),
