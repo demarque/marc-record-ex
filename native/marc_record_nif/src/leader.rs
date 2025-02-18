@@ -48,7 +48,10 @@ impl Encoder for LeaderWrapper {
                 ("record_length", self.record_length.encode(env)),
                 ("status", self.status.encode(env)),
                 ("record_type", self.record_type.encode(env)),
-                ("bibliographic_level", self.bibliographic_level.encode(env)),
+                (
+                    "bibliographical_level",
+                    self.bibliographic_level.encode(env),
+                ),
                 ("control_type", self.control_type.encode(env)),
                 ("coding_scheme", self.coding_scheme.encode(env)),
                 ("data_base_address", self.data_base_address.encode(env)),
@@ -223,6 +226,15 @@ enum ControlTypeWrapper {
     Archival,
 }
 
+impl ControlTypeWrapper {
+    pub fn new(control_type: ControlType) -> Self {
+        match control_type {
+            ControlType::Unspecified => ControlTypeWrapper::Unspecified,
+            ControlType::Archival => ControlTypeWrapper::Archival,
+        }
+    }
+}
+
 impl Encoder for ControlTypeWrapper {
     fn encode<'a>(&self, env: Env<'a>) -> Term<'a> {
         let control_type = match self {
@@ -233,19 +245,19 @@ impl Encoder for ControlTypeWrapper {
     }
 }
 
-impl ControlTypeWrapper {
-    pub fn new(control_type: ControlType) -> Self {
-        match control_type {
-            ControlType::Unspecified => ControlTypeWrapper::Unspecified,
-            ControlType::Archival => ControlTypeWrapper::Archival,
-        }
-    }
-}
-
 #[derive(Debug, PartialEq, Eq)]
 pub enum CodingSchemeWrapper {
     Marc8,
     Ucs,
+}
+
+impl CodingSchemeWrapper {
+    pub fn new(coding_scheme: CodingScheme) -> Self {
+        match coding_scheme {
+            CodingScheme::Marc8 => CodingSchemeWrapper::Marc8,
+            CodingScheme::Ucs => CodingSchemeWrapper::Ucs,
+        }
+    }
 }
 
 impl Encoder for CodingSchemeWrapper {
@@ -255,15 +267,6 @@ impl Encoder for CodingSchemeWrapper {
             CodingSchemeWrapper::Ucs => "ucs",
         };
         coding_scheme.encode(env)
-    }
-}
-
-impl CodingSchemeWrapper {
-    pub fn new(coding_scheme: CodingScheme) -> Self {
-        match coding_scheme {
-            CodingScheme::Marc8 => CodingSchemeWrapper::Marc8,
-            CodingScheme::Ucs => CodingSchemeWrapper::Ucs,
-        }
     }
 }
 
@@ -282,6 +285,28 @@ pub enum EncodingLevelWrapper {
     ObsoleteFull,
     ObsoleteMinimal,
     AddedFromBatch,
+}
+
+impl EncodingLevelWrapper {
+    pub fn new(encoding_level: EncodingLevel) -> Self {
+        match encoding_level {
+            EncodingLevel::Full => EncodingLevelWrapper::Full,
+            EncodingLevel::FullMaterialNotExamined => EncodingLevelWrapper::FullMaterialNotExamined,
+            EncodingLevel::LessThanFullMaterialNotExamined => {
+                EncodingLevelWrapper::LessThanFullMaterialNotExamined
+            }
+            EncodingLevel::Abbreviated => EncodingLevelWrapper::Abbreviated,
+            EncodingLevel::Core => EncodingLevelWrapper::Core,
+            EncodingLevel::Partial => EncodingLevelWrapper::Partial,
+            EncodingLevel::Minimal => EncodingLevelWrapper::Minimal,
+            EncodingLevel::Prepublication => EncodingLevelWrapper::Prepublication,
+            EncodingLevel::Unknown => EncodingLevelWrapper::Unknown,
+            EncodingLevel::NotApplicable => EncodingLevelWrapper::NotApplicable,
+            EncodingLevel::ObsoleteFull => EncodingLevelWrapper::ObsoleteFull,
+            EncodingLevel::ObsoleteMinimal => EncodingLevelWrapper::ObsoleteMinimal,
+            EncodingLevel::AddedFromBatch => EncodingLevelWrapper::AddedFromBatch,
+        }
+    }
 }
 
 impl Encoder for EncodingLevelWrapper {
@@ -304,28 +329,6 @@ impl Encoder for EncodingLevelWrapper {
             EncodingLevelWrapper::AddedFromBatch => "added_from_batch",
         };
         encoding_level.encode(env)
-    }
-}
-
-impl EncodingLevelWrapper {
-    pub fn new(encoding_level: EncodingLevel) -> Self {
-        match encoding_level {
-            EncodingLevel::Full => EncodingLevelWrapper::Full,
-            EncodingLevel::FullMaterialNotExamined => EncodingLevelWrapper::FullMaterialNotExamined,
-            EncodingLevel::LessThanFullMaterialNotExamined => {
-                EncodingLevelWrapper::LessThanFullMaterialNotExamined
-            }
-            EncodingLevel::Abbreviated => EncodingLevelWrapper::Abbreviated,
-            EncodingLevel::Core => EncodingLevelWrapper::Core,
-            EncodingLevel::Partial => EncodingLevelWrapper::Partial,
-            EncodingLevel::Minimal => EncodingLevelWrapper::Minimal,
-            EncodingLevel::Prepublication => EncodingLevelWrapper::Prepublication,
-            EncodingLevel::Unknown => EncodingLevelWrapper::Unknown,
-            EncodingLevel::NotApplicable => EncodingLevelWrapper::NotApplicable,
-            EncodingLevel::ObsoleteFull => EncodingLevelWrapper::ObsoleteFull,
-            EncodingLevel::ObsoleteMinimal => EncodingLevelWrapper::ObsoleteMinimal,
-            EncodingLevel::AddedFromBatch => EncodingLevelWrapper::AddedFromBatch,
-        }
     }
 }
 

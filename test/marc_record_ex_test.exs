@@ -110,4 +110,30 @@ defmodule MarcRecordExTest do
 
     assert Map.fetch!(subfield, "data") == "rvmgf"
   end
+
+  test "record 1: has a leader with all the field with the right value", state do
+    leader_map =
+      state[:records]
+      |> Enum.at(0)
+      |> Map.get("leader")
+
+    keys = %{
+      "record_length" => 1649,
+      "status" => "corrected",
+      "record_type" => "language_material",
+      "bibliographical_level" => "monograph",
+      "control_type" => "unspecified",
+      "coding_scheme" => "marc8",
+      "data_base_address" => 385,
+      "encoding_level" => "partial",
+      "descriptive_cataloging_form" => "aacr2",
+      "multipart_resource_record_level" => "not_applicable"
+    }
+
+    assert Enum.all?(leader_map, fn entry ->
+             key = elem(entry, 0)
+             value = elem(entry, 1)
+             elem(Map.fetch(keys, key), 1) == value
+           end)
+  end
 end
