@@ -1,19 +1,19 @@
 # MarcRecordEx
 
-Elixir library for working with MARC records. This is a wrapper for the Rust Library [marc_record](https://github.com/demarque/marc-record)
+MarcRecordEx is an Elixir library for working with MARC records. This is a wrapper for the Rust Library [marc_record](https://github.com/demarque/marc-record)
 
 ## Installation
 ### Rust
 Install [Rust](https://www.rust-lang.org/tools/install)
 
-### Installing Elixir:
+### Installing Elixir
 - install [asdf](https://github.com/asdf-vm/asdf)
 - `asdf plugin add erlang`
 - `asdf plugin add elixir`
 - `asdf install`
 
 ### Rustler
-Rustler is a library used to make [NIL](https://www.erlang.org/docs/17/tutorial/nif) out of Rust code. A NIF file allows the Erlang VM to call Rust code. It is then used to call the Rust code from Elixir.
+Rustler is a library used to make [NIF](https://www.erlang.org/docs/17/tutorial/nif) out of Rust code. A NIF file allows the Erlang VM to call Rust code. It is then used to call the Rust code from Elixir.
 `mix deps.get`
 
 ## Example

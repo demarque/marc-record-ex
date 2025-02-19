@@ -13,6 +13,8 @@ use marc_record::{parse_records, ControlField, DataField, Field, Record, Subfiel
 
 use rustler::{Binary, Encoder, Env, Error, NifResult, Term};
 
+pub mod leader;
+
 #[rustler::nif]
 fn parse_records_wrapper<'a>(data: Binary<'a>) -> NifResult<Vec<RecordWrapper>> {
     match parse_records(data.as_slice()) {
@@ -31,18 +33,19 @@ fn parse_records_wrapper<'a>(data: Binary<'a>) -> NifResult<Vec<RecordWrapper>> 
 }
 
 struct RecordWrapper {
+    pub leader: leader::LeaderWrapper,
     pub fields: Vec<FieldWrapper>,
 }
 
 impl RecordWrapper {
     pub fn new(record: Record) -> Self {
-        let fields = Self::get_record_fields(record);
-        RecordWrapper { fields }
+        let fields = Self::get_record_fields(record.fields);
+        let leader = leader::LeaderWrapper::new(record.leader);
+        RecordWrapper { leader, fields }
     }
 
-    fn get_record_fields(record: Record) -> Vec<FieldWrapper> {
-        record
-            .fields
+    fn get_record_fields(fields: Vec<Field>) -> Vec<FieldWrapper> {
+        fields
             .into_iter()
             .map(|field| FieldWrapper::new(field))
             .collect()
@@ -51,11 +54,12 @@ impl RecordWrapper {
 
 impl Encoder for RecordWrapper {
     fn encode<'a>(&self, env: Env<'a>) -> Term<'a> {
+        let leader = self.leader.encode(env);
         let mut record_fields = Term::list_new_empty(env);
         for field in &self.fields {
             record_fields = record_fields.list_prepend(field.encode(env));
         }
-        Term::map_from_pairs(env, &[("fields", record_fields)])
+        Term::map_from_pairs(env, &[("fields", record_fields), ("leader", leader)])
             .expect("Failed to create map: duplicate key")
     }
 }
