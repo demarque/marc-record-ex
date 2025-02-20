@@ -5,7 +5,7 @@ defmodule MarcRecordEx.MixProject do
     [
       app: :marc_record_ex,
       version: "0.1.0",
-      elixir: "~> 1.18",
+      elixir: "~> 1.12",
       start_permanent: Mix.env() == :prod,
       deps: deps()
     ]
