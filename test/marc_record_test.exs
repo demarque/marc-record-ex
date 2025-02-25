@@ -1,18 +1,18 @@
-defmodule MarcRecordExTest do
+defmodule MarcRecordTest do
   use ExUnit.Case
-  doctest MarcRecordEx
+  doctest MarcRecord
 
   setup_all do
     records =
       File.read!("test/fixtures/record.mrc")
-      |> MarcRecordEx.parse_records_wrapper()
+      |> MarcRecord.parse_records_wrapper()
 
     {:ok, records: records}
   end
 
   test "parser return error for invalid data" do
     content = <<"aa"::binary>>
-    {status, _} = MarcRecordEx.parse_records_wrapper(content)
+    {status, _} = MarcRecord.parse_records_wrapper(content)
     assert status == :error
   end
 

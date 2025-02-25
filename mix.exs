@@ -1,4 +1,4 @@
-defmodule MarcRecordEx.MixProject do
+defmodule MarcRecord.MixProject do
   use Mix.Project
 
   def project do

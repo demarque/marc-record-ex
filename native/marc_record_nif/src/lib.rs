@@ -173,4 +173,4 @@ impl Encoder for SubfieldWrapper {
     }
 }
 
-rustler::init!("Elixir.MarcRecordEx");
+rustler::init!("Elixir.MarcRecord");

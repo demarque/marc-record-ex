@@ -19,7 +19,7 @@ Rustler is a library used to make [NIF](https://www.erlang.org/docs/17/tutorial/
 ## Example
 Start the iex console with `iex -S mix` and run the following code:
 ```elixir
-MarcRecordEx.parse_records("./samples/marc8_multiple.mrc")
+MarcRecord.parse_records("./samples/marc8_multiple.mrc")
 ```
 
 
