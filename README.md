@@ -22,3 +22,8 @@ Start the iex console with `iex -S mix` and run the following code:
 MarcRecordEx.parse_records("./samples/marc8_multiple.mrc")
 ```
 
+
+License
+=======
+
+`marc-record-ex` is distributed under the terms of the MIT license.
