@@ -1,4 +1,4 @@
-defmodule MarcRecordEx do
+defmodule MarcRecord do
   @moduledoc """
   This module provides a wrapper around the Rust NIF for MARC records.
   """
@@ -14,7 +14,7 @@ defmodule MarcRecordEx do
 
   def parse_records(filename) do
     data = File.read!(filename)
-    MarcRecordEx.parse_records_wrapper(data)
+    MarcRecord.parse_records_wrapper(data)
   end
 
   def example do
